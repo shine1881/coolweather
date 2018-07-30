@@ -3,7 +3,7 @@ package com.example.itsme.coolweather.gson;
 import com.google.gson.annotations.SerializedName;
 
 public class Forecast {
-    public String data;
+    public String date;
     @SerializedName("tmp")
     public Temperarature temperarature;
     @SerializedName("cond")
