@@ -1,5 +1,6 @@
 package com.example.itsme.coolweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.itsme.coolweather.gson.Forecast;
 import com.example.itsme.coolweather.gson.Weather;
+import com.example.itsme.coolweather.service.AutoUpdateService;
 import com.example.itsme.coolweather.util.HttpUtil;
 import com.example.itsme.coolweather.util.Utility;
 
@@ -47,13 +49,15 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //判断版本信息，若大于5.0则生效，模拟器小于5.0，故无法生效
-        if (Build.VERSION.SDK_INT>=21){
-            View decorView=getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        if (Build.VERSION.SDK_INT >= 21) {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View
+                    .SYSTEM_UI_FLAG_LAYOUT_STABLE);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
@@ -70,15 +74,15 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
-        drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
-        navbutton=(Button)findViewById(R.id.nav_button);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navbutton = (Button) findViewById(R.id.nav_button);
         navbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawerLayout.openDrawer(Gravity.START);
             }
         });
-        swipeRefresh=(SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
+        swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
@@ -86,7 +90,7 @@ public class WeatherActivity extends AppCompatActivity {
         if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatnerResponse(weatherString);
-            weatherId=weather.basic.weatherId;
+            weatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             //无缓存时去服务器查询天气
@@ -154,6 +158,9 @@ public class WeatherActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = PreferenceManager
                                     .getDefaultSharedPreferences(WeatherActivity.this).edit();
                             showWeatherInfo(weather);
+                            Intent intent = new Intent(WeatherActivity.this, AutoUpdateService
+                                    .class);
+                            startService(intent);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT)
                                     .show();
@@ -185,7 +192,7 @@ public class WeatherActivity extends AppCompatActivity {
         String weatherInfo = weather.now.more.info;
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
-       // Log.d("MainActivity","updateTime is "+updateTime);
+        // Log.d("MainActivity","updateTime is "+updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
@@ -197,7 +204,7 @@ public class WeatherActivity extends AppCompatActivity {
             TextView maxText = (TextView) view.findViewById(R.id.max_text);
             TextView minText = (TextView) view.findViewById(R.id.min_text);
             dateText.setText(forecast.date);
-            Log.d("MainActivity","date is "+forecast.date);
+            Log.d("MainActivity", "date is " + forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperarature.max);
             minText.setText(forecast.temperarature.min);
